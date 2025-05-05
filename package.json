@@ -1,0 +1,29 @@
+{
+  "name": "diy-app-backend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.x.x",
+    "compression": "^1.x.x",
+    "cors": "^2.x.x",
+    "dotenv": "^16.x.x",
+    "express": "^4.x.x",
+    "express-async-handler": "^1.x.x",
+    "jsdom": "^23.2.0",
+    "jsonwebtoken": "^9.x.x",
+    "moment": "^2.30.1",
+    "morgan": "^1.x.x",
+    "multer": "^1.x.x",
+    "mysql2": "^3.x.x",
+    "sequelize": "^6.x.x",
+    "uuid4": "^2.x.x"
+  },
+  "devDependencies": {
+    "nodemon": "^3.x.x",
+    "sequelize-cli": "^6.6.1"
+  }
+}
