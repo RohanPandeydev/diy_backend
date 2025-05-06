@@ -127,7 +127,14 @@ BlogController.getAll = [
                 include: [{
                     model: db.category,
                     as: "category",
-                    attributes: ["id", "name", "slug"],
+                    attributes: ["id", "name", "slug", "parent_id"],
+                    include: [
+                        {
+                          model: db.category,
+                          as: "parent", // Self-referential include
+                          attributes: ["id", "name", "slug"], // Attributes of parent category
+                        }
+                      ]
                 }],
             });
 
@@ -155,7 +162,14 @@ BlogController.getOne = [
                 include: [{
                     model: db.category,
                     as: "category",
-                    attributes: ["id", "name", "slug"],
+                    attributes: ["id", "name", "slug", "parent_id"],
+                    include: [
+                        {
+                          model: db.category,
+                          as: "parent", // Self-referential include
+                          attributes: ["id", "name", "slug"], // Attributes of parent category
+                        }
+                      ]
                 }],
             });
 
@@ -186,7 +200,14 @@ BlogController.getBySlug = [
                 include: [{
                     model: db.category,
                     as: "category",
-                    attributes: ["id", "name", "slug"],
+                    attributes: ["id", "name", "slug", "parent_id"],
+                    include: [
+                        {
+                            model: db.category,
+                            as: "parent", // Self-referential include
+                            attributes: ["id", "name", "slug"], // Attributes of parent category
+                        }
+                    ]
                 }],
             });
 

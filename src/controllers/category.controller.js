@@ -93,6 +93,7 @@ CategoryController.getAll = [
                         break;
                 }
             }
+            console.log(where,"where")
 
             // Top-level categories only
             if (query?.parent_null === "true") {
@@ -200,7 +201,7 @@ CategoryController.getBySlug = [
             });
 
             if (!category) {
-                return notFoundResponse(res, "Blog not found");
+                return notFoundResponse(res, "Category not found");
             }
 
             return successResponse(res, {

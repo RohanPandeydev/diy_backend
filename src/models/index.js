@@ -43,7 +43,7 @@ Object.keys(db).forEach((modelName) => {
 });
 (async function () {
   try {
-    await sequelize.sync({ alter: true });
+    await sequelize.sync({ alter: false });
     console.log("All models were synchronized successfully.");
   } catch (error) {
     console.error("Unable to synchronized to the models:", error);
