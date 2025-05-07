@@ -3,6 +3,8 @@ const { unauthorizedResponse } = require("../utils/response.js");
 
 const config = process.env;
 
+
+console.log(config,"configconfig")
 const verifyToken = (req, res, next) => {
   let token =
     req.body.token || req.query.token || req.headers["authorization"];
