@@ -82,7 +82,6 @@ CategoryController.getAll = [
 
             const where = { deletedAt: null };
 
-            // Search filters
             if (query?.filter && query?.search) {
                 switch (query.filter) {
                     case "name":
@@ -93,14 +92,11 @@ CategoryController.getAll = [
                         break;
                 }
             }
-            console.log(where,"where")
 
-            // Top-level categories only
             if (query?.parent_null === "true") {
                 where.parent_id = null;
             }
 
-            // Sorting
             let order = [["createdAt", "ASC"]];
             if (query?.order) {
                 const [field, direction] = query.order.split(".");
@@ -109,7 +105,6 @@ CategoryController.getAll = [
                 }
             }
 
-            // Include parent category with optional slug filter
             const include = [
                 {
                     model: db.category,
@@ -117,10 +112,9 @@ CategoryController.getAll = [
                     attributes: ["id", "name", "slug"],
                     required: !!query.parent_slug,
                     where: query.parent_slug ? { slug: query.parent_slug } : undefined,
-                }
+                },
             ];
 
-            // Count and fetch
             const total = await db.category.count({ where, include });
             const page_count = Math.ceil(total / limit);
             const pagination = { page, limit, page_count, total };
@@ -134,9 +128,32 @@ CategoryController.getAll = [
                 order,
             });
 
+            // For each result, get its slug, find categories where their parent.slug === this.slug
+            const enrichedCategories = await Promise.all(
+                categories.map(async (cat) => {
+                    const catData = cat.toJSON();
+                    const children = await db.category.findAll({
+                        where: {
+                            deletedAt: null,
+                        },
+                        include: [
+                            {
+                                model: db.category,
+                                as: "parent",
+                                attributes: [],
+                                where: { slug: catData.slug },
+                            },
+                        ],
+                        attributes: { exclude: ["deletedAt"] },
+                    });
+
+                    return { ...catData, child: children };
+                })
+            );
+
             return successResponse(res, {
                 status: true,
-                data: categories,
+                data: enrichedCategories,
                 pagination,
             });
         } catch (error) {
@@ -145,6 +162,7 @@ CategoryController.getAll = [
         }
     }),
 ];
+
 
 
 // Get Category by ID

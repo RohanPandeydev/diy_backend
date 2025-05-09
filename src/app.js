@@ -7,7 +7,7 @@ const router = require("./routes");
 
 const app = express();
 
-app.use(cors());
+app.use(cors("*"));
 app.use(morgan("dev"));
 app.use(compression());
 app.use(express.json({ limit: "50mb" }));
