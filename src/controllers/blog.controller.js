@@ -130,11 +130,11 @@ BlogController.getAll = [
                     attributes: ["id", "name", "slug", "parent_id"],
                     include: [
                         {
-                          model: db.category,
-                          as: "parent", // Self-referential include
-                          attributes: ["id", "name", "slug"], // Attributes of parent category
+                            model: db.category,
+                            as: "parent", // Self-referential include
+                            attributes: ["id", "name", "slug"], // Attributes of parent category
                         }
-                      ]
+                    ]
                 }],
             });
 
@@ -165,16 +165,19 @@ BlogController.getOne = [
                     attributes: ["id", "name", "slug", "parent_id"],
                     include: [
                         {
-                          model: db.category,
-                          as: "parent", // Self-referential include
-                          attributes: ["id", "name", "slug"], // Attributes of parent category
+                            model: db.category,
+                            as: "parent", // Self-referential include
+                            attributes: ["id", "name", "slug"], // Attributes of parent category
                         }
-                      ]
+                    ]
                 }],
             });
 
             if (!blog) {
-                return notFoundResponse(res, "Blog not found");
+                return successResponse(res, {
+                    status: false,
+                    message: "Blog not found",
+                });;
             }
 
             return successResponse(res, {
@@ -212,7 +215,10 @@ BlogController.getBySlug = [
             });
 
             if (!blog) {
-                return notFoundResponse(res, "Blog not found");
+                return successResponse(res, {
+                    status: false,
+                    message: "Blog not found",
+                });;
             }
 
             return successResponse(res, {
@@ -236,13 +242,19 @@ BlogController.update = [
             const obj = { ...req.body };
 
             if (!slug) {
-                return notFoundResponse(res, "Slug not found");
+                return successResponse(res, {
+                    status: false,
+                    message: "slug not found",
+                });
             }
 
             const blog = await db.blog.findOne({ where: { slug } });
 
             if (!blog || blog.is_deleted) {
-                return notFoundResponse(res, "Blog not found");
+                return successResponse(res, {
+                    status: false,
+                    message: "Blog not found",
+                });;
             }
 
             if (req.body?.slug) {
@@ -300,7 +312,10 @@ BlogController.delete = [
             const blog = await db.blog.findByPk(id);
 
             if (!blog || blog.is_deleted) {
-                return notFoundResponse(res, "Blog not found");
+                return successResponse(res, {
+                    status: false,
+                    message: "Blog not found",
+                });;
             }
 
             if (blog.cover_image) {
@@ -330,7 +345,10 @@ BlogController.softDelete = [
             const blog = await db.blog.findByPk(id);
 
             if (!blog || blog.is_deleted) {
-                return notFoundResponse(res, "Blog not found");
+                return successResponse(res, {
+                    status: false,
+                    message: "Blog not found",
+                });;
             }
 
             if (blog.is_published) {

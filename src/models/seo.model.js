@@ -66,7 +66,7 @@
                     type: DataTypes.TEXT,
                     allowNull: true,
                 },
-                custom_footer_cripts: {
+                custom_footer_scripts: {
                     type: DataTypes.TEXT,
                     allowNull: true,
                 },
@@ -85,11 +85,12 @@
                     type: DataTypes.INTEGER,
                     allowNull: false,
                 },
+                json_ld:{
+                    type:DataTypes.TEXT
+                }
 
               
-                cover_image: {
-                    type: DataTypes.TEXT,
-                },
+              
             },
             {
                 sequelize,

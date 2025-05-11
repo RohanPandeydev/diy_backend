@@ -9,26 +9,38 @@ const {
 const verifyToken = require("../middleware/auth.middleware.js");
 const upload = require("../middleware/upload.middleware.js");
 const deleteFile = require("../utils/deletefile.js");
-const { where, col, fn } = require("sequelize")
+const { where, col, fn, Op } = require("sequelize")
 
 const SeoController = {};
 
 // Create SEO
 SeoController.create = [
     verifyToken,
-    upload.single("cover_image"),
+    upload.single("og_image"),
     expressAsyncHandler(async (req, res) => {
         try {
-            const { title, slug, category_id } = req.body;
+            const { title, slug, category_slug } = req.body;
             const author_id = req.user.id;
             const obj = { ...req.body };
 
-            if (!(title && slug && category_id)) {
+
+            if (!(title && slug && category_slug)) {
                 return successResponse(res, {
                     status: false,
                     message: "Please fill all required fields",
                 });
             }
+            const findCategory = await db.category.findOne({ where: { slug: category_slug } })
+            // console.log(findCategory, "ggg")
+
+            if (!findCategory) {
+                return successResponse(res, {
+                    status: false,
+                    message: "category not found",
+                });
+            }
+
+            obj.category_id = findCategory?.id
 
             const findAuthor = await db.user.findByPk(author_id);
             if (!findAuthor) {
@@ -38,13 +50,7 @@ SeoController.create = [
                 });
             }
 
-            const findCategory = await db.category.findByPk(category_id);
-            if (!findCategory) {
-                return successResponse(res, {
-                    status: false,
-                    message: "Category not found",
-                });
-            }
+
 
             const seoExists = await db.seo.findOne({
                 where: { slug },
@@ -57,17 +63,40 @@ SeoController.create = [
             }
 
             if (req.file) {
-                obj.cover_image = req.file.path;
+                obj.og_image = req.file.path;
             }
 
             obj.author_id = author_id;
+            console.log(findCategory.slug, "findCategory.slug ")
 
             const seo = await db.seo.create(obj);
+            await db.category.update(
+                { slug: seo.slug },
+                { where: { id: findCategory.id } }
+            );
+
+            // Fetch fresh SEO entry to ensure latest data
+            const populatedSeo = await db.seo.findOne({
+                where: { id: seo.id },
+                include: [
+                    {
+                        model: db.category,
+                        as: 'category',
+                        include: [
+                            {
+                                model: db.category,
+                                as: 'parent'
+                            }
+                        ]
+                    }
+                ]
+            });
+
 
             return successResponse(res, {
                 status: true,
                 message: "SEO entry created successfully",
-                data: seo,
+                data: populatedSeo,
             });
         } catch (error) {
             console.error(error);
@@ -109,12 +138,15 @@ SeoController.getBySlug = [
             const seo = await db.seo.findOne({
                 where: { slug },
                 include: [
-                    { model: db.user, as: "author" },
                     { model: db.category, as: "category" },
                 ],
             });
 
-            if (!seo) return notFoundResponse(res, "SEO entry not found");
+            if (!seo) return successResponse(res, {
+                status: false,
+                message: "seo not found",
+            });;
+
 
             return successResponse(res, {
                 status: true,
@@ -150,7 +182,10 @@ SeoController.getByCategoryName = [
             });
 
             if (!seoEntries) {
-                return notFoundResponse(res, "No SEO entries found for this category.");
+                return successResponse(res, {
+                    status: false,
+                    message: "Seo not found",
+                });;
             }
 
             return successResponse(res, {
@@ -166,17 +201,33 @@ SeoController.getByCategoryName = [
 // Update SEO by Slug
 SeoController.update = [
     verifyToken,
-    upload.single("cover_image"),
+    upload.single("og_image"),
     expressAsyncHandler(async (req, res) => {
         try {
             const { slug } = req.params;
             const obj = { ...req.body };
 
-            const seo = await db.seo.findOne({ where: { slug } });
-            if (!seo) return notFoundResponse(res, "SEO entry not found");
+            const seo = await db.seo.findOne({
+                where: { slug }
+                ,
+            });
+
+            if (!seo) return successResponse(res, {
+                status: false,
+                message: "seo  not found",
+            });
+
+
 
             if (req.body.slug && req.body.slug !== slug) {
-                const existing = await db.seo.findOne({ where: { slug: req.body.slug } });
+                const existing = await db.seo.findOne({
+                    where: {
+                        [Op.and]: [
+                            { id: { [Op.ne]: seo.id } },
+                            { slug: req.body.slug },
+                        ],
+                    },
+                });
                 if (existing) {
                     return successResponse(res, {
                         status: false,
@@ -184,18 +235,48 @@ SeoController.update = [
                     });
                 }
             }
+            const findCategory = await db.category.findOne({ where: { slug: slug } })
+
+            console.log(findCategory, "---------")
+
 
             if (req.file) {
-                obj.cover_image = req.file.path;
-                if (seo.cover_image) deleteFile(seo.cover_image);
+                obj.og_image = req.file.path;
+                if (seo.og_image) deleteFile(seo.og_image);
             }
 
             await seo.update(obj);
 
+
+
+
+
+            await db.category.update(
+                { slug: req.body.slug },
+                { where: { id: findCategory.id } }
+            );
+
+            // Fetch fresh SEO entry to ensure latest data
+            const populatedSeo = await db.seo.findOne({
+                where: { id: seo.id },
+                include: [
+                    {
+                        model: db.category,
+                        as: 'category',
+                        include: [
+                            {
+                                model: db.category,
+                                as: 'parent'
+                            }
+                        ]
+                    }
+                ]
+            });
+
             return successResponse(res, {
                 status: true,
                 message: "SEO entry updated successfully",
-                data: seo,
+                data: populatedSeo,
             });
         } catch (error) {
             console.error(error);
@@ -212,9 +293,12 @@ SeoController.delete = [
             const { slug } = req.params;
             const seo = await db.seo.findOne({ where: { slug } });
 
-            if (!seo) return notFoundResponse(res, "SEO entry not found");
+            if (!seo) return successResponse(res, {
+                status: false,
+                message: "seo not found",
+            });;
 
-            if (seo.cover_image) deleteFile(seo.cover_image);
+            if (seo.og_image) deleteFile(seo.og_image);
             await db.seo.destroy({ where: { slug } });
 
             return successResponse(res, {

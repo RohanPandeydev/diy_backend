@@ -186,7 +186,10 @@ CategoryController.getOne = [
             });
 
             if (!category) {
-                return notFoundResponse(res, "Category not found");
+                return successResponse(res, {
+                    status: false,
+                    message: "Category not found",
+                });
             }
 
             return successResponse(res, {
@@ -219,7 +222,10 @@ CategoryController.getBySlug = [
             });
 
             if (!category) {
-                return notFoundResponse(res, "Category not found");
+                return successResponse(res, {
+                    status: false,
+                    message: "category not found",
+                });
             }
 
             return successResponse(res, {
@@ -243,13 +249,19 @@ CategoryController.update = [
             const obj = { ...req.body };
 
             if (!slug) {
-                return notFoundResponse(res, "Slug not provided");
+                successResponse(res, {
+                    status: false,
+                    message: "slug not provided",
+                });
             }
 
             const category = await db.category.findOne({ where: { slug } });
 
             if (!category) {
-                return notFoundResponse(res, "Category not found");
+                return successResponse(res, {
+                    status: false,
+                    message: "category not found",
+                });
             }
 
             // Slug uniqueness check (if updating slug)
@@ -312,7 +324,10 @@ CategoryController.delete = [
             const category = await db.category.findByPk(id);
 
             if (!category) {
-                return notFoundResponse(res, "Category not found");
+                return successResponse(res, {
+                    status: false,
+                    message: "category not found",
+                });
             }
 
 
@@ -341,7 +356,10 @@ CategoryController.softDelete = [
             const category = await db.category.findByPk(id);
 
             if (!category) {
-                return notFoundResponse(res, "Category not found");
+                return successResponse(res, {
+                    status: false,
+                    message: "category not found",
+                });
             }
 
             // Check for child categories
