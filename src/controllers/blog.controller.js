@@ -94,18 +94,29 @@ BlogController.getAll = [
             const limit = parseInt(query?.limit) || 10;
             const offset = (page - 1) * limit;
 
-            const where = { is_deleted: false };
-            if (query?.filter && query?.search) {
-                switch (query.filter) {
-                    case "title":
-                        where.title = { [Op.substring]: query.search };
-                        break;
-                    case "slug":
-                        where.slug = { [Op.substring]: query.search };
-                        break;
-                }
+            const where = {
+                is_deleted: false,
+            };
+
+            // General Search (title OR slug)
+            if (query?.search) {
+                where[Op.or] = [
+                    { title: { [Op.substring]: query.search } },
+                    { slug: { [Op.substring]: query.search } },
+                ];
             }
 
+            // Filter: is_published
+            if (query?.is_published !== undefined) {
+                where.is_published = query.is_published === 'true'; // string to boolean
+            }
+
+            // Filter: category (assuming it's category_id or slug, clarify if needed)
+            if (query?.category) {
+                where.category_id = query.category;
+            }
+
+            // Order
             let order = [["createdAt", "ASC"]];
             if (query?.order) {
                 const [field, direction] = query.order.split(".");
@@ -128,13 +139,11 @@ BlogController.getAll = [
                     model: db.category,
                     as: "category",
                     attributes: ["id", "name", "slug", "parent_id"],
-                    include: [
-                        {
-                            model: db.category,
-                            as: "parent", // Self-referential include
-                            attributes: ["id", "name", "slug"], // Attributes of parent category
-                        }
-                    ]
+                    include: [{
+                        model: db.category,
+                        as: "parent",
+                        attributes: ["id", "name", "slug"],
+                    }],
                 }],
             });
 
@@ -143,6 +152,7 @@ BlogController.getAll = [
                 data: blogs,
                 pagination,
             });
+
         } catch (error) {
             console.log(error);
             return serverErrorResponse(res, error);
