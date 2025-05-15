@@ -86,7 +86,7 @@ BlogController.create = [
 
 // Get All Blogs
 BlogController.getAll = [
-    verifyToken,
+    
     expressAsyncHandler(async (req, res) => {
         try {
             const { query } = req;
