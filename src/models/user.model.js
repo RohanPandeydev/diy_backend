@@ -2,13 +2,18 @@
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
     class user extends Model {
-        /**
-         * Helper method for defining associations.
-         * This method is not a part of Sequelize lifecycle.
-         * The `models/index` file will call this method automatically.
-         */
-     
+
+
+        static associate(models) {
+            // User belongs to a user (author)
+            user.belongsTo(models.user, {
+                foreignKey: "reporting_to",
+                as: "reporting",
+            });
+        }
     }
+
+
     user.init(
         {
             first_name: {
@@ -43,6 +48,10 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.INTEGER(2),
                 allowNull: false,
                 defaultValue: 0,
+            },
+            reporting_to: {
+                type: DataTypes.INTEGER, // changed from STRING to INTEGER for FK
+                allowNull: true,         // root categories will have NULL parent
             },
 
             profile_img: {
