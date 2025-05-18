@@ -33,6 +33,10 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING(128),
                 allowNull: false,
             },
+            designation: {
+                type: DataTypes.STRING(128),
+                allowNull: false,
+            },
 
 
             phone_number: {
