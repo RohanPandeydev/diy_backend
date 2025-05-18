@@ -12,7 +12,8 @@ module.exports = function setupSocket(server) {
     });
 
     io.use((socket, next) => {
-        const authHeader = socket.handshake.headers['authorization'];
+        const authHeader = socket.handshake.auth.token || socket.handshake.headers['authorization'];
+
 
         if (!authHeader) {
             return next(new Error("Authorization header missing"));
@@ -56,10 +57,10 @@ module.exports = function setupSocket(server) {
                     message: "Admin access granted",
                     permission: true,
                 });
-            }   
+            }
             const permissionCheck = await UserPermissionController.checkIsUserHasPermissionSocket(socket.user, data);
 
-            console.log(permissionCheck,"4")
+            console.log(permissionCheck, "4")
 
             socket.emit("rbac-response", {
                 status: !!permissionCheck,

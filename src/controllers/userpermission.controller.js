@@ -203,6 +203,20 @@ UserPermissionController.checkIsUserHasPermission = [
         }
 
         // Step 3: Check if the user has this permission
+        const user = await db.user.findOne({
+            where: {
+                id: user_id,
+                is_deleted: false,
+            },
+        });
+
+        if (!user) {
+            return successResponse(res, {
+                status: false,
+                message: "User does not found",
+            });
+        }
+        // Step 4: Check if the user has this permission
         const userPermission = await db.userpermission.findOne({
             where: {
                 user_id,
@@ -285,6 +299,21 @@ UserPermissionController.checkIsUserHasPermissionSocket = async (tokendata, data
     }
 
     // Step 3: Check if the user has this permission
+    const user = await db.user.findOne({
+        where: {
+            id: user_id,
+            is_deleted: false,
+        },
+    });
+
+
+
+    if (!user) {
+        return false
+
+    }
+
+    // Step 4: Check if the user has this permission
     const userPermission = await db.userpermission.findOne({
         where: {
             user_id,

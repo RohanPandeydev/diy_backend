@@ -9,6 +9,7 @@ const {
 const { createToken } = require("../utils/jwt.js");
 const auth = require("../utils/auth.js");
 const verifyToken = require("../middleware/auth.middleware.js");
+const upload = require("../middleware/upload.middleware.js");
 
 
 
@@ -54,6 +55,24 @@ AuthController.loginAdmin = [
                 },
             });
 
+            // Step 4: Check if the user has this permission
+            const userPermission = await db.userpermission.findAll({
+                where: {
+                    user_id: user?.id,
+                    is_deleted: false,
+                },
+                include: [{
+                    model: db.permission,
+                    as: "permission",
+                    include: [{
+                        model: db.permissionmodule,
+                        as: "module",
+                    }],
+                }],
+            });
+
+
+
             // // Check if the role is 1 (admin)
             // if (user.role !== 1) {
             //     return successResponse(res, {
@@ -82,6 +101,7 @@ AuthController.loginAdmin = [
                 status: true,
                 token,
                 user,
+                permission: userPermission
             });
         } catch (error) {
             console.log(error);
@@ -203,9 +223,13 @@ AuthController.register = [
 ];
 AuthController.staffRegister = [
     verifyToken,
+    upload.single("profile_image"),
     expressAsyncHandler(async (req, res) => {
         try {
             const { email, password } = req.body;
+
+            console.log(req.body, "878787")
+
             const { id, role } = req.user;
             if (!(email && password)) {
                 return successResponse(res, {
@@ -250,6 +274,7 @@ AuthController.staffRegister = [
                 message: created
                     ? "your account created successfully"
                     : "this account is already associated",
+                data: user
             });
         } catch (error) {
             console.log(error);

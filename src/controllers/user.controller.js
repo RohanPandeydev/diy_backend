@@ -154,11 +154,15 @@ UserController.update = [
                     });
                 }
             }
+console.log(req.file,"req")
 
             // Update profile image
             if (req.file) {
                 obj.profile_img = req.file.path;
-                deleteFile(user.profile_img);
+                if (isEmailExist?.profile_img) {
+
+                    deleteFile(user.profile_img);
+                }
             }
 
             obj.is_active = obj.is_active === "true" || obj.is_active === true;
@@ -204,7 +208,7 @@ UserController.delete = [
                 message: "User deleted successfully",
             });
         } catch (error) {
-            console.log(error);
+            console.log(error.message);
             return serverErrorResponse(res, error);
         }
     }),
