@@ -93,10 +93,10 @@ AuthController.changePassword = [
     verifyToken, // Ensure the user is logged in
     expressAsyncHandler(async (req, res) => {
         try {
-            const { oldPassword, newPassword,email, } = req.body;
-            const {  role } = req.user; // from token payload
+            const { oldPassword, newPassword, email, } = req.body;
+            const { role } = req.user; // from token payload
 
-            if ((!oldPassword || !newPassword)&& role!==1) {
+            if ((!oldPassword || !newPassword) && role !== 1) {
                 return successResponse(res, {
                     status: false,
                     message: "Both old and new passwords are required",
@@ -257,7 +257,6 @@ AuthController.staffRegister = [
         }
     }),
 ];
-
 AuthController.logout = [
     verifyToken,
     expressAsyncHandler(async (req, res) => {

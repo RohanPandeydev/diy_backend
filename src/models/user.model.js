@@ -10,6 +10,11 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: "reporting_to",
                 as: "reporting",
             });
+
+            user.hasMany(models.userpermission, {
+                foreignKey: "user_id",
+                as: "permissions",
+            });
         }
     }
 

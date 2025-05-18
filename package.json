@@ -20,6 +20,7 @@
     "multer": "^1.x.x",
     "mysql2": "^3.x.x",
     "sequelize": "^6.x.x",
+    "socket.io": "^4.8.1",
     "uuid4": "^2.x.x"
   },
   "devDependencies": {
