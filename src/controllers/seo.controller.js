@@ -131,7 +131,7 @@ SeoController.getAll = [
 
 // Get SEO by Slug
 SeoController.getBySlug = [
-    verifyToken,
+    
     expressAsyncHandler(async (req, res) => {
         try {
             const { slug } = req.params;

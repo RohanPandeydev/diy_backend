@@ -86,7 +86,6 @@ BlogController.create = [
 
 // Get All Blogs
 BlogController.getAll = [
-    
     expressAsyncHandler(async (req, res) => {
         try {
             const { query } = req;
@@ -111,7 +110,7 @@ BlogController.getAll = [
                 where.is_published = query.is_published === 'true'; // string to boolean
             }
 
-            // Filter: category (assuming it's category_id or slug, clarify if needed)
+            // Filter: category_id
             if (query?.category) {
                 where.category_id = query.category;
             }
@@ -125,10 +124,26 @@ BlogController.getAll = [
                 }
             }
 
-            const total = await db.blog.count({ where });
+            // Build category filter if category_slug is provided
+            const categoryWhere = {};
+            if (query?.category_slug) {
+                categoryWhere.slug = query.category_slug;
+            }
+
+            // Count total with joined category
+            const total = await db.blog.count({
+                where,
+                include: [{
+                    model: db.category,
+                    as: "category",
+                    where: Object.keys(categoryWhere).length ? categoryWhere : undefined,
+                }],
+            });
+
             const page_count = Math.ceil(total / limit);
             const pagination = { page, limit, page_count, total };
 
+            // Fetch blogs
             const blogs = await db.blog.findAll({
                 where,
                 attributes: { exclude: ["deletedAt"] },
@@ -138,6 +153,7 @@ BlogController.getAll = [
                 include: [{
                     model: db.category,
                     as: "category",
+                    where: Object.keys(categoryWhere).length ? categoryWhere : undefined,
                     attributes: ["id", "name", "slug", "parent_id"],
                     include: [{
                         model: db.category,
@@ -203,7 +219,7 @@ BlogController.getOne = [
 
 // Get Blog by Slug
 BlogController.getBySlug = [
-    verifyToken,
+    
     expressAsyncHandler(async (req, res) => {
         try {
             const { slug } = req.params;
