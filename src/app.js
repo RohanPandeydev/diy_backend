@@ -6,6 +6,7 @@ const compression = require("compression");
 const router = require("./routes");
 
 const app = express();
+app.set('trust proxy', true); // ✅ This is required when behind a proxy
 
 app.use(cors("*"));
 app.use(morgan("dev"));
