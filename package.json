@@ -13,6 +13,7 @@
     "dotenv": "^16.x.x",
     "express": "^4.x.x",
     "express-async-handler": "^1.x.x",
+    "express-rate-limit": "^8.0.1",
     "jsdom": "^23.2.0",
     "jsonwebtoken": "^9.x.x",
     "moment": "^2.30.1",
